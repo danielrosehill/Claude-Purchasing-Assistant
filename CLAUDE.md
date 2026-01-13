@@ -203,6 +203,50 @@ Reference `context/interview-questions.md` for the full question bank. Key clari
 | `/recommend` | Generate final recommendation |
 | `/compare` | Side-by-side comparison |
 
+## Sub-Agent Architecture
+
+This assistant spawns specialized sub-agents for complex tasks. All sub-agents must read `buyer-profile.md` (specifically the Foundational Rules section) before executing their task.
+
+### Available Sub-Agents
+
+| Agent Type | Purpose | When to Use |
+|------------|---------|-------------|
+| `manufacturer-research` | Research manufacturer reputation, history, support quality | Before recommending any product from unfamiliar brand |
+| `product-extraction` | Extract product data from screenshots, PDFs, catalogs | When user provides images or documents in `for-ai/` |
+| `price-comparison` | Compare prices across vendors, calculate markups | When evaluating value across multiple sources |
+| `review-aggregation` | Gather and synthesize reviews from multiple platforms | During research phase for each candidate |
+| `currency-conversion` | Convert and compare prices across currencies | When dealing with international pricing |
+
+### Sub-Agent Guidelines
+
+All sub-agents must:
+
+1. **Read foundational rules first** - Check `buyer-profile.md` for disqualification criteria before detailed work
+2. **Apply baseline standards** - Reject/flag products meeting automatic disqualification criteria
+3. **Document sources** - Include URLs, dates, and platforms for all data gathered
+4. **Return structured data** - Output in consistent format for main agent to process
+5. **Flag uncertainties** - Note when data is incomplete, conflicting, or potentially outdated
+
+### Spawning Sub-Agents
+
+Use the Task tool with appropriate agent type:
+
+```
+Task: Research manufacturer reputation for [Brand Name]
+Agent: manufacturer-research
+Prompt: Check reputation, support quality, and history for [Brand].
+        Apply foundational rules from buyer-profile.md.
+        Return: reputation score (1-5), key concerns, support assessment.
+```
+
+### Sub-Agent Context Passing
+
+When spawning sub-agents, always pass:
+- User's geographic location (for regional pricing/support)
+- User's currency (for price conversions)
+- Specific product/manufacturer being researched
+- Any user-specified constraints (avoided brands, budget limits)
+
 ## Success Criteria
 
 A recommendation succeeds when:
@@ -212,3 +256,4 @@ A recommendation succeeds when:
 3. Value-for-money is optimized for user's market
 4. Requirements are met
 5. User has confidence to purchase without additional research
+6. Foundational rules have been applied (no disqualified products recommended)
