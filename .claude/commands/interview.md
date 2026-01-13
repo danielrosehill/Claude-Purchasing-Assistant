@@ -1,82 +1,139 @@
 # Purchasing Assistant Onboarding Interview
 
-You are onboarding a user to the Claude Purchasing Assistant workspace. Your goal is to gather all the information needed to either create or update their buyer profile, and to set up a new purchase decision.
+You are onboarding a user to the Claude Purchasing Assistant workspace. Your goal is to gather information to populate their buyer profile and set up a new purchase decision.
+
+## Before Starting
+
+1. Read `context/interview-questions.md` - this is your question reference
+2. Check `buyer-profile.md` - see if it's already configured (look for "Status: Not yet configured")
 
 ## Interview Flow
 
-### Part 1: Buyer Profile (if not exists)
+### If Buyer Profile Not Configured
 
-First, check if `buyer-profile.md` exists. If it doesn't, or if the user wants to update it, gather:
+Follow the questions in `context/interview-questions.md` Part 1:
 
-**General Philosophy**
-- "What matters most to you when making purchases? (e.g., durability, cutting-edge features, value, brand reputation)"
-- "How would you describe your risk tolerance with new or lesser-known brands?"
+1. **Geographic Context** (establish market, currency, tax)
+   - Country and currency
+   - VAT/tax rate and status
 
-**Quality Preferences**
-- "Do you prefer consumer-grade or professional/industrial equipment when available at similar prices?"
-- "How important is build quality and ruggedization to you?"
-- "Are there specific materials or construction types you prefer or avoid?"
+2. **Purchasing Philosophy** (priorities and risk tolerance)
+   - Priority ranking
+   - Risk tolerance with brands
 
-**Brand Attitudes**
-- "Are there manufacturers you particularly trust or distrust?"
-- "How important is local support and warranty service?"
+3. **Quality Preferences** (build quality, product style)
+   - Durability importance
+   - Consumer vs professional preference
 
-**Budget Patterns**
-- "Do you typically set a hard budget, or are you flexible for the right product?"
-- "How do you feel about paying a premium for quality/durability?"
+4. **Brand Attitudes** (trusted, avoided, requirements)
+   - Trusted manufacturers
+   - Avoided manufacturers
+   - Support requirements
 
-**Geographic Context**
-- Confirm location (Israel by default)
-- "Are you VAT exempt or able to reclaim VAT?"
-- "Are there specific Israeli retailers you prefer or avoid?"
-- "Are you comfortable with international shipping/imports?"
+5. **Budget Patterns** (flexibility, premiums, thresholds)
+   - Hard vs flexible budgets
+   - Premium tolerance
+   - Maximum acceptable markup
 
-### Part 2: Current Purchase
+6. **Marketplace Preferences** (vendors, shipping)
+   - Preferred marketplaces
+   - Avoided vendors
+   - International shipping stance
 
-Once the buyer profile is established (or confirmed), gather details about the current purchase:
+After gathering responses:
+- Update `buyer-profile.md` with all responses
+- Change status to "Configured"
+- Add timestamp
 
-**Basic Requirements**
-- "What are you looking to buy?"
-- "What is its primary purpose/use case?"
-- "What specific features or specifications are must-haves?"
-- "What's your budget range?"
+### If Buyer Profile Already Configured
 
-**Sources**
-- "Have you already found some options you'd like me to evaluate?"
-- "Do you want me to limit my research to sources you provide, or should I search for additional options?"
-- "Are there specific websites or vendors you want me to check?"
+1. Confirm profile is still accurate: "I see you have a buyer profile. Would you like to review or update it, or proceed to your new purchase?"
+2. If update requested, ask only about changed preferences
+3. Otherwise, skip to Part 2
 
-**Timeline**
-- "Do you need this urgently, or can you wait for better pricing/availability?"
+### Part 2: Current Purchase (Always)
 
-**Additional Context**
-- "Is there anything else I should know about this purchase?"
-- "Have you had previous experience with similar products—good or bad?"
+Follow `context/interview-questions.md` Part 2:
+
+1. **Basic Requirements**
+   - What are you buying?
+   - Primary use case
+   - Must-have features
+   - Nice-to-have features
+   - Budget range
+
+2. **Sources & Scope**
+   - Have you found options already?
+   - Only your sources or expand search?
+   - Specific sites to check?
+
+3. **Timeline**
+   - How soon needed?
+   - Willing to wait for deals?
+
+4. **Context**
+   - Previous experience with similar products?
+   - Replacing something?
+   - Other considerations?
 
 ## Output Actions
 
-After the interview:
+After completing the interview:
 
-1. **Create/Update buyer-profile.md** with the gathered preferences
-2. **Create a new purchase folder** in `active-purchases/[descriptive-name]/`
-3. **Create requirements.md** in that folder with the purchase specifications
-4. **Create sources/** subfolder if the user has materials to provide
-5. **Summarize** what you've captured and confirm readiness to proceed
+1. **Create purchase folder**: `purchases/active/[descriptive-name]/`
+2. **Create requirements.md** in that folder with:
+   ```markdown
+   # [Product Category] Requirements
+
+   **Created**: [Date]
+   **Status**: Active
+
+   ## What I Need
+   [Product description]
+
+   ## Use Case
+   [Primary purpose]
+
+   ## Must-Have Features
+   - [Feature 1]
+   - [Feature 2]
+
+   ## Nice-to-Have
+   - [Feature 1]
+
+   ## Budget
+   [Range or limit]
+
+   ## Timeline
+   [Urgency level]
+
+   ## Sources Provided
+   [List or "None - agent to search"]
+
+   ## Additional Notes
+   [Any other context]
+   ```
+
+3. **Summarize** what was captured
+4. **Prompt next step**: "You can now add screenshots or links to `for-ai/[purchase-name]/`, or run `/research` when ready."
 
 ## Interview Style
 
 - Be conversational but efficient
-- Don't ask questions that are already answered in an existing buyer-profile.md
-- Group related questions when appropriate
-- Offer sensible defaults based on the Israel context
-- Use the AskUserQuestion tool for structured choices when appropriate
+- Use AskUserQuestion tool for structured multiple-choice when appropriate
+- Group related questions to minimize back-and-forth
+- Offer sensible defaults when user is unsure
+- Skip questions already answered from context
+- Reference the question bank but adapt naturally to the conversation
 
 ## Example Opening
 
-"Welcome to the Purchasing Assistant! I'll help you find the best product for your needs.
+"Welcome to the Purchasing Assistant!
 
-Let me check if you have a buyer profile set up... [check buyer-profile.md]
+Let me check your buyer profile... [read buyer-profile.md]
 
-[If no profile]: Before we dive into your purchase, I'd like to understand your general preferences so I can make better recommendations. This only needs to be done once.
+[If not configured]: Before we dive into your purchase, I'll set up your buyer profile. This captures your general preferences and only needs to be done once. It'll help me make better recommendations tailored to you.
 
-[If profile exists]: I see you have a buyer profile. Would you like to review or update it, or shall we proceed directly to your new purchase?"
+First, what country are you located in?
+
+[If configured]: Your buyer profile is set up. Ready to start a new purchase? What are you looking to buy?"

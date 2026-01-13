@@ -5,9 +5,9 @@ Begin the research phase for an active purchase. This command evaluates all cand
 ## Pre-Research Checklist
 
 1. Read `buyer-profile.md` to understand standing preferences
-2. Identify the active purchase folder in `active-purchases/`
+2. Identify the active purchase folder in `purchases/active/`
 3. Read `requirements.md` for specific needs
-4. Inventory any sources provided in the `sources/` folder
+4. Check `for-ai/` for any sources provided by the user (screenshots, PDFs, links)
 
 ## Research Process
 
@@ -22,7 +22,7 @@ Begin the research phase for an active purchase. This command evaluates all cand
    - Company reputation and history
    - Quality track record
    - Support/warranty reputation
-   - Presence in Israeli market
+   - Presence in user's market (from buyer profile)
 
 3. **Product Assessment**
    - Build quality and materials
@@ -32,7 +32,7 @@ Begin the research phase for an active purchase. This command evaluates all cand
    - Longevity/durability reports
 
 4. **Value Assessment**
-   - Price in ILS
+   - Price in user's local currency
    - Equivalent USD/EUR price
    - Comparison to international RRP
    - Calculate markup percentage
@@ -44,16 +44,16 @@ Begin the research phase for an active purchase. This command evaluates all cand
 
 ### Applying Disqualification Criteria
 
-Immediately disqualify products if they have:
-- Poor manufacturer reputation
-- Review scores below 3.5/5 aggregate
-- Markup exceeding 50% over international RRP (without clear justification)
+Reference thresholds from `buyer-profile.md`:
+- Poor manufacturer reputation (unless profile indicates flexibility)
+- Review scores below threshold (default 3.5/5)
+- Markup exceeding profile threshold
 - Known reliability issues with the specific model
-- No viable warranty/support path in Israel
+- No viable warranty/support path in user's region
 
 ### Additional Discovery (if permitted)
 
-If the user has allowed expanded search:
+If the user has allowed expanded search (check requirements):
 - Search for alternatives not in the provided sources
 - Look for industrial/professional alternatives to consumer products
 - Check for current sales or promotions
@@ -61,19 +61,20 @@ If the user has allowed expanded search:
 
 ## Output
 
-Create `research.md` in the active purchase folder with:
+Create `research.md` in `from-ai/[purchase-name]/`:
 
 ```markdown
 # [Purchase Name] Research
 
 **Date**: [Date]
 **Budget**: [Budget]
+**Location**: [From buyer profile]
 **Requirements Summary**: [Brief summary]
 
 ## Candidates Evaluated
 
 ### [Product 1 Name]
-- **Price**: ₪X,XXX ($XXX USD)
+- **Price**: [Local currency] ([USD equivalent])
 - **RRP**: $XXX (markup: +X%)
 - **Vendor**: [Name]
 - **Manufacturer**: [Name] - [1-sentence reputation]

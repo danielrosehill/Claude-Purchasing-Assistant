@@ -2,56 +2,67 @@
 
 ## Purpose
 
-This Claude Space provides structured assistance for making purchasing decisions. It helps evaluate products against defined criteria, compares options across vendors, and provides specific recommendations optimized for value-for-money—particularly useful in markets where pricing can vary significantly from RRP.
-
-## How This Space Works
-
-The assistant operates in three phases:
-
-1. **Onboarding**: Run `/interview` to provide your buyer profile and purchase requirements
-2. **Research**: Provide product screenshots, links, or specifications for evaluation
-3. **Recommendation**: Receive a specific product recommendation with reasoning
+This Claude Space provides structured assistance for making purchasing decisions. It helps evaluate products against user-defined criteria, compares options across vendors, and provides specific recommendations optimized for value-for-money.
 
 ## Repository Structure
 
 ```
-├── CLAUDE.md              # This file - agent instructions
-├── buyer-profile.md       # Your reusable buyer preferences
-├── active-purchases/      # Current purchasing decisions in progress
-│   └── [purchase-name]/   # One folder per purchase decision
-│       ├── requirements.md    # What you need
-│       ├── sources/           # Screenshots, PDFs, links
-│       ├── research.md        # Agent's research notes
-│       └── recommendation.md  # Final recommendation
-├── completed-purchases/   # Archive of past decisions
-└── .claude/commands/      # Repo-specific slash commands
+├── CLAUDE.md                      # Agent instructions (this file)
+├── buyer-profile.md               # User preferences (populated via /interview)
+├── context/
+│   └── interview-questions.md     # Question bank for onboarding
+├── for-ai/                        # INPUT: User provides files here
+│   └── [purchase-name]/           # Screenshots, PDFs, links
+├── from-ai/                       # OUTPUT: Agent places results here
+│   └── [purchase-name]/           # Research, recommendations
+├── purchases/
+│   ├── active/                    # Current purchase decisions
+│   │   └── [purchase-name]/
+│   │       └── requirements.md    # What the user needs
+│   └── completed/                 # Archived decisions
+└── .claude/commands/              # Slash commands
 ```
 
-## Buyer Profile
+## Workflow Overview
 
-Before making recommendations, the agent MUST read `buyer-profile.md` to understand:
+### Phase 1: Onboarding (`/interview`)
 
-- General purchasing philosophy
-- Standing criteria (manufacturer reputation, build quality preferences)
-- Geographic context (Israel - pricing, availability, VAT considerations)
-- Budget flexibility patterns
-- Risk tolerance
+1. Check if `buyer-profile.md` is configured
+2. If not, reference `context/interview-questions.md` for questions to ask
+3. Populate `buyer-profile.md` with user responses
+4. Capture current purchase requirements
+5. Create folder in `purchases/active/[purchase-name]/`
 
-If no buyer profile exists, the agent should prompt the user to create one via `/interview`.
+### Phase 2: Input Collection
 
-## Working Guidelines
+User provides product options in `for-ai/`:
+- Screenshots of products from websites
+- PDFs with specifications
+- Links or notes in text files
 
-### Before Making Recommendations
+### Phase 3: Research (`/research`)
 
-1. **Read buyer-profile.md** - Understand standing preferences
-2. **Read the active purchase requirements** - Specific needs for this purchase
-3. **Analyze all provided sources** - Screenshots, specs, reviews
-4. **Consider geographic context**:
-   - Israeli market pricing vs. international RRP
-   - VAT implications (17% in Israel)
-   - Local warranty and support
-   - Shipping costs and import duties
-   - Currency exchange rates (ILS to USD/EUR)
+1. Read `buyer-profile.md` for preferences
+2. Read `purchases/active/[purchase]/requirements.md`
+3. Process all materials in `for-ai/`
+4. Evaluate each product against criteria
+5. Output `research.md` to `from-ai/[purchase]/`
+
+### Phase 4: Recommendation (`/recommend`)
+
+1. Review research findings
+2. Apply buyer profile weightings
+3. Select single best option
+4. Output `recommendation.md` to `from-ai/[purchase]/`
+
+## Agent Guidelines
+
+### Before Any Recommendation
+
+1. **Verify buyer profile exists** - If not configured, run interview first
+2. **Reference the questionnaire** - Use `context/interview-questions.md` for interview flow
+3. **Check for inputs** - Look in `for-ai/` for user-provided materials
+4. **Read requirements** - Understand specific needs for this purchase
 
 ### Research Process
 
@@ -59,119 +70,127 @@ For each candidate product, evaluate:
 
 1. **Manufacturer Reputation**
    - Company history and reliability
-   - Support quality and warranty honor rate
-   - Presence in Israeli market
+   - Support quality and warranty track record
+   - Presence in user's market
 
 2. **Product Quality**
    - Build quality and materials
-   - Durability/ruggedization (weighted heavily per buyer profile)
-   - Professional/industrial alternatives to consumer products
+   - Durability indicators
+   - Professional/industrial alternatives
 
 3. **Reviews and Track Record**
-   - Aggregate review scores
+   - Aggregate review scores (multiple sources)
    - Common failure modes
    - Longevity reports
 
 4. **Value Assessment**
-   - Price vs. international RRP
-   - Price vs. feature set
+   - Local price vs. international RRP
+   - Markup percentage calculation
    - Total cost of ownership
-   - Opportunity cost of alternatives
 
 ### Disqualification Criteria
 
-Immediately disqualify products with:
-- Manufacturer with poor reputation or known quality issues
-- Consistently terrible reviews (< 3.5/5 aggregated)
-- Significant markup (> 50% over international RRP without justification)
-- Known reliability issues in the specific model
-- No local support or warranty honoring in Israel
+Apply these based on buyer profile thresholds:
 
-### Output Format
+- Manufacturer with poor reputation (unless user profile indicates flexibility)
+- Review scores below user's threshold (default: 3.5/5)
+- Markup exceeding user's threshold (from profile)
+- Known reliability issues with specific model
+- No viable support path in user's region
 
-#### Research Notes (`research.md`)
+### Geographic Considerations
+
+Adapt to user's location (from profile):
+
+- **Currency**: Display prices in user's currency with conversions
+- **VAT/Tax**: Factor in local rates and exemption status
+- **RRP Comparison**: Compare to international pricing
+- **Shipping**: Consider import costs for international purchases
+- **Support**: Evaluate local warranty and service availability
+
+## Output Formats
+
+### Research Output (`from-ai/[purchase]/research.md`)
 
 ```markdown
 # [Product Category] Research
 
+**Date**: [Date]
+**Budget**: [From requirements]
+**Location**: [From profile]
+
 ## Candidates Evaluated
 
 ### [Product Name]
-- **Price**: ₪X,XXX (USD equivalent: $XXX)
-- **RRP Comparison**: +X% over US/EU RRP
+- **Price**: [Local currency] ([USD/EUR equivalent])
+- **vs RRP**: +X% over international
 - **Manufacturer**: [Name] - [Reputation assessment]
-- **Reviews**: X.X/5 ([Source])
-- **Key Specs**: ...
-- **Pros**: ...
-- **Cons**: ...
-- **Verdict**: CONSIDER / DISQUALIFIED (reason)
+- **Reviews**: X.X/5 ([Sources])
+- **Build Quality**: [Assessment]
+- **Meets Requirements**: Yes/Partial/No
+- **Verdict**: CONSIDER / DISQUALIFIED ([reason])
 
-[Repeat for each product]
+[Repeat for each]
+
+## Summary
+- Evaluated: X products
+- Passed screening: X products
 ```
 
-#### Final Recommendation (`recommendation.md`)
+### Recommendation Output (`from-ai/[purchase]/recommendation.md`)
 
 ```markdown
 # Recommendation: [Product Name]
 
-## Summary
-One-paragraph recommendation with confidence level.
+**Confidence**: High/Medium/Low
 
-## Why This Product
-- Key reasons for selection
+## Summary
+[Why this product is the best choice]
+
+## Key Reasons
+1. [Reason]
+2. [Reason]
+3. [Reason]
 
 ## Why Not Alternatives
-- Brief explanation of runner-up dismissals
+| Product | Reason |
+|---------|--------|
+| [Name] | [Brief reason] |
 
 ## Purchase Details
-- **Recommended Vendor**: [Name]
-- **Price**: ₪X,XXX
-- **Link**: [if provided]
-- **Notes**: Any purchase-specific advice
+- **Vendor**: [Name]
+- **Price**: [Amount]
+- **Link**: [If available]
 
 ## Caveats
-Any limitations or considerations
+[Any limitations or considerations]
 ```
 
 ## Clarifying Questions
 
-The agent should ask clarifying questions when:
+Reference `context/interview-questions.md` for the full question bank. Key clarifications to always offer:
 
-- Budget range is unclear
-- Use case specifics are missing
-- Technical requirements are ambiguous
-- Source preference (agent-found vs. user-provided only) is unclear
-- VAT exemption status is unknown
+- Source scope: "Only your sources, or should I search for more?"
+- Vendor preferences: "Any vendors to prefer or avoid?"
+- VAT status: "Standard VAT, exempt, or reclaimable?"
+- Timeline: "Urgent, or can you wait for better pricing?"
+- Shipping: "Open to international shipping?"
 
-Standard clarifications to offer:
+## Slash Commands
 
-1. "Do you want me to only consider the sources you've provided, or should I search for additional options?"
-2. "Are there vendors you prefer or want to avoid?"
-3. "Are you VAT exempt? This could affect the best-value calculation."
-4. "What's your timeline—do you need this immediately, or can you wait for better pricing?"
-
-## MCP Integrations
-
-The agent can leverage these MCPs when available:
-
-- **Exchange Rates**: Check current ILS/USD/EUR rates for price comparisons
-- **Web Search**: Research product reviews and specifications
-- **Web Fetch**: Retrieve product pages and specifications
+| Command | Purpose |
+|---------|---------|
+| `/interview` | Onboard user and capture preferences |
+| `/research` | Evaluate all candidate products |
+| `/recommend` | Generate final recommendation |
+| `/compare` | Side-by-side comparison |
 
 ## Success Criteria
 
-A recommendation is successful when:
+A recommendation succeeds when:
 
-1. It clearly identifies a single best option
-2. The reasoning is transparent and traceable
-3. Value-for-money is optimized for the Israeli market
-4. The product meets the stated requirements
-5. Manufacturer and quality standards align with buyer profile
-6. The user has confidence to purchase without additional research
-
-## Workflow Commands
-
-- `/interview` - Initial onboarding to capture buyer profile and purchase requirements
-- `/research` - Begin research phase for active purchase
-- `/recommend` - Generate final recommendation
-- `/compare` - Side-by-side comparison of specific products
+1. Single best option is clearly identified
+2. Reasoning traces back to user's stated preferences
+3. Value-for-money is optimized for user's market
+4. Requirements are met
+5. User has confidence to purchase without additional research

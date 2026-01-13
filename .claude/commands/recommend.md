@@ -6,8 +6,8 @@ Produce the final purchasing recommendation based on completed research.
 
 Before generating a recommendation, verify:
 1. `buyer-profile.md` has been reviewed
-2. `requirements.md` exists for this purchase
-3. `research.md` has been completed with evaluated candidates
+2. `purchases/active/[purchase]/requirements.md` exists
+3. `from-ai/[purchase]/research.md` has been completed
 4. At least one product has CONSIDER status
 
 If prerequisites aren't met, inform the user what's missing and offer to help complete those steps.
@@ -24,24 +24,24 @@ From the research, examine all products marked CONSIDER:
 
 ### 2. Apply Weighted Criteria
 
-Based on typical buyer profile priorities:
+Reference the priority order from `buyer-profile.md`. Default weights if not specified:
 
-**High Weight (per profile)**
+**Typically High Weight**
 - Build quality/durability
 - Manufacturer reputation
 - Reliability track record
 
-**Medium Weight**
+**Typically Medium Weight**
 - Feature match to requirements
 - Value vs. RRP
 - Local support availability
 
-**Lower Weight**
+**Typically Lower Weight**
 - Cutting-edge features
 - Aesthetics
 - Brand prestige
 
-Adjust weights based on specific buyer profile preferences.
+Adjust based on the specific buyer profile priorities.
 
 ### 3. Make the Call
 
@@ -49,7 +49,7 @@ Select ONE product as the recommendation. Be decisive—the user wants a clear a
 
 ## Output
 
-Create `recommendation.md` in the active purchase folder:
+Create `recommendation.md` in `from-ai/[purchase-name]/`:
 
 ```markdown
 # Recommendation: [Exact Product Name]
@@ -79,7 +79,7 @@ Create `recommendation.md` in the active purchase folder:
 
 - **Product**: [Full product name/model]
 - **Recommended Vendor**: [Name]
-- **Price**: ₪[Amount] (~$[USD])
+- **Price**: [Local currency] (~$[USD])
 - **Link**: [URL if available]
 
 ## Purchase Notes
@@ -107,10 +107,10 @@ If confidence is low, explain why but still make the call.
 ## After Recommendation
 
 Offer next steps:
-- "Ready to purchase? I can help you draft a purchase confirmation."
-- "Want me to set a reminder to check for price drops?"
-- "Should I archive this to completed-purchases?"
+- "Ready to purchase? Let me know when you've ordered."
+- "Want me to search for better pricing or wait for sales?"
+- "Should I archive this to completed purchases?"
 
 When the user confirms purchase:
-1. Move the folder from `active-purchases/` to `completed-purchases/`
+1. Move folder from `purchases/active/` to `purchases/completed/`
 2. Add a completion note with actual purchase price and date

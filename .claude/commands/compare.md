@@ -9,6 +9,11 @@ The user may invoke this with specific products:
 - "Compare these three monitors"
 - Or simply run /compare and be prompted for products
 
+## Before Comparing
+
+1. Read `buyer-profile.md` for preferences (if configured)
+2. Check `for-ai/` for any materials the user has provided
+
 ## Process
 
 1. **Identify Products**
@@ -17,26 +22,29 @@ The user may invoke this with specific products:
 2. **Gather Information**
    For each product, research:
    - Full specifications
-   - Current Israeli pricing
+   - Current pricing in user's market (from buyer profile)
    - International RRP for markup calculation
    - Review scores and consensus
    - Manufacturer reputation
 
 3. **Generate Comparison**
 
-## Output Format
+## Output
+
+Create `comparison.md` in `from-ai/` (or `from-ai/[purchase-name]/` if part of active purchase):
 
 ```markdown
 # Comparison: [Product Category]
 
 **Date**: [Date]
 **Products Compared**: [Count]
+**Location**: [From buyer profile, or "Not specified"]
 
 ## Quick Summary
 
 | | [Product A] | [Product B] | [Product C] |
 |---|---|---|---|
-| **Price (ILS)** | ₪X,XXX | ₪X,XXX | ₪X,XXX |
+| **Price** | [Local] | [Local] | [Local] |
 | **vs RRP** | +X% | +X% | +X% |
 | **Reviews** | X.X/5 | X.X/5 | X.X/5 |
 | **Best For** | [1-2 words] | [1-2 words] | [1-2 words] |
@@ -69,8 +77,8 @@ The user may invoke this with specific products:
 
 | Product | Price | RRP | Markup | Value Rating |
 |---------|-------|-----|--------|--------------|
-| [A] | ₪X,XXX | $XXX | +X% | Good/Fair/Poor |
-| [B] | ₪X,XXX | $XXX | +X% | Good/Fair/Poor |
+| [A] | [Local] | $XXX | +X% | Good/Fair/Poor |
+| [B] | [Local] | $XXX | +X% | Good/Fair/Poor |
 
 ## Winner by Category
 
@@ -81,14 +89,14 @@ The user may invoke this with specific products:
 
 ## Bottom Line
 
-[Clear statement of which product wins overall for this user's specific needs, referencing buyer profile priorities]
+[Clear statement of which product wins overall, referencing buyer profile priorities if configured]
 ```
 
 ## Guidelines
 
 - Use tables for easy scanning
 - Highlight meaningful differences, not just list specs
-- Apply buyer profile weightings when declaring winners
+- Apply buyer profile weightings when declaring winners (if profile exists)
 - Be opinionated—users want guidance, not just data
 - Call out any products that should be immediately dismissed
 
