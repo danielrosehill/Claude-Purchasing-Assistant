@@ -4,6 +4,8 @@
 
 **Status**: Not yet configured
 
+**Email**: [Not set — for receiving PDF reports via Resend]
+
 ---
 
 ## Foundational Rules

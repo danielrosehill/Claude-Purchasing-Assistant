@@ -4,6 +4,17 @@
 
 This Claude Space provides structured assistance for making purchasing decisions. It helps evaluate products against user-defined criteria, compares options across vendors, and provides specific recommendations optimized for value-for-money.
 
+## Primary Objective
+
+The goal of each interaction is to produce **one clean deliverable**: a professionally formatted PDF report containing decisive recommendations. The assistant should:
+
+1. **Minimize user interaction** - Do the heavy lifting autonomously
+2. **Cache product data** - Save specs and pricing to `data/products/` for reuse across sessions
+3. **Deliver a PDF report** - Using Typst for professional formatting
+4. **Email the report** - Via Resend MCP if configured
+
+The user should be able to provide context/sources, trigger the workflow, and receive a complete recommendation report with minimal back-and-forth.
+
 ## Repository Structure
 
 ```
@@ -12,9 +23,11 @@ This Claude Space provides structured assistance for making purchasing decisions
 ├── context/
 │   └── interview-questions.md     # Question bank for onboarding
 ├── data/
-│   └── extracted/                 # DATA: Structured CSV extractions
-│       └── [purchase-name]/
-│           └── products.csv       # Extracted product data
+│   ├── extracted/                 # DATA: Structured CSV extractions
+│   │   └── [purchase-name]/
+│   │       └── products.csv       # Extracted product data
+│   └── products/                  # CACHE: Product specs fetched from web
+│       └── [brand-model].json     # Cached product specifications
 ├── for-ai/                        # INPUT: User provides files here
 │   └── [purchase-name]/           # Screenshots, PDFs, links
 ├── from-ai/                       # OUTPUT: Agent places results here
@@ -29,13 +42,34 @@ This Claude Space provides structured assistance for making purchasing decisions
 
 ## Workflow Overview
 
-### Phase 1: Onboarding (`/interview`)
+### Phase 1: Onboarding (`/onboard`)
 
-1. Check if `buyer-profile.md` is configured
-2. If not, reference `context/interview-questions.md` for questions to ask
-3. Populate `buyer-profile.md` with user responses
-4. Capture current purchase requirements
-5. Create folder in `purchases/active/[purchase-name]/`
+The `/onboard` command is the **recommended entry point**. It intelligently determines the fastest path forward:
+
+1. **Check existing context**:
+   - Is `buyer-profile.md` configured?
+   - Are there files in `for-ai/`?
+   - Is there a `purchases/active/` folder with requirements?
+
+2. **If sufficient context exists** (profile configured + sources provided):
+   - Skip interview entirely
+   - Summarize what's available
+   - Proceed directly to research
+
+3. **If profile is missing but sources exist**:
+   - Ask only essential questions (country, currency, budget range)
+   - Use sensible defaults for everything else
+   - Proceed to research
+
+4. **If no context exists**:
+   - Fall back to abbreviated interview
+   - Capture essentials only (not full questionnaire)
+
+The goal is **minimal friction**. The user should not repeat information that's already captured.
+
+### Phase 1b: Full Interview (`/interview`)
+
+Use `/interview` only when the user explicitly wants a comprehensive profile setup. This follows the full questionnaire in `context/interview-questions.md`.
 
 ### Phase 2: Input Collection
 
@@ -125,7 +159,91 @@ Adapt to user's location (from profile):
 - **Shipping**: Consider import costs for international purchases
 - **Support**: Evaluate local warranty and service availability
 
-## Output Formats
+## Final Deliverable: PDF Report
+
+The primary output is a **single PDF report** generated using Typst. This is the definitive recommendation document.
+
+### Report Generation Process
+
+1. **Generate Typst source**: Create `from-ai/[purchase]/report.typ`
+2. **Compile to PDF**: Run `typst compile report.typ report.pdf`
+3. **Email if configured**: Use Resend MCP to send to user
+
+### PDF Report Structure
+
+The report should include:
+
+```typst
+#set document(title: "[Product Category] Recommendation", author: "Claude Purchasing Assistant")
+#set page(paper: "a4", margin: 2cm)
+#set text(font: "Linux Libertine", size: 11pt)
+
+= [Product Category] Recommendation Report
+
+*Generated*: [Date] | *Budget*: [Amount] | *Location*: [Country]
+
+== Executive Summary
+
+[1-2 paragraph summary of the recommendation and key reasons]
+
+== Top Recommendations (Ranked)
+
+=== #1: [Product Name] — RECOMMENDED
+#table(
+  columns: (auto, auto),
+  [*Price*], [[Amount] at [Store]],
+  [*Specs*], [[Key specifications]],
+  [*Rating*], [[X.X/5 from N sources]],
+  [*Why*], [[Primary reasons for recommendation]],
+  [*Spec Match*], [[Which requirements it meets]],
+)
+
+=== #2: [Product Name] — Runner-up
+[Same structure]
+
+=== #3: [Product Name] — Budget Alternative
+[Same structure, if applicable]
+
+== Requirements Adherence Matrix
+
+#table(
+  columns: (auto, auto, auto, auto),
+  [*Requirement*], [*#1*], [*#2*], [*#3*],
+  [Feature A], [✓], [✓], [Partial],
+  [Feature B], [✓], [✗], [✓],
+  // ...
+)
+
+== Products Evaluated but Not Recommended
+
+#table(
+  columns: (auto, auto),
+  [*Product*], [*Reason Excluded*],
+  [[Name]], [[Brief reason]],
+)
+
+== Purchase Links
+
+- *#1*: [Store URL]
+- *#2*: [Store URL]
+
+== Methodology
+
+[Brief note on sources checked, data freshness, assumptions made]
+```
+
+### Email Delivery
+
+If Resend MCP is available and buyer profile includes email:
+
+1. Attach the PDF report
+2. Subject: "[Product Category] Recommendation Ready"
+3. Body: Brief summary with top pick highlighted
+4. Send to email in buyer profile (or ask for email if not set)
+
+## Intermediate Output Formats
+
+These formats support the workflow but the PDF is the final deliverable.
 
 ### Research Output (`from-ai/[purchase]/research.md`)
 
@@ -193,14 +311,58 @@ Reference `context/interview-questions.md` for the full question bank. Key clari
 - Timeline: "Urgent, or can you wait for better pricing?"
 - Shipping: "Open to international shipping?"
 
+## Product Data Caching
+
+To avoid redundant web fetches, cache product data in `data/products/`:
+
+### Cache Format
+
+Save as `data/products/[brand]-[model-slug].json`:
+
+```json
+{
+  "brand": "Sony",
+  "model": "WH-1000XM5",
+  "category": "headphones",
+  "fetched": "2025-01-13",
+  "sources": ["sony.com", "rtings.com", "amazon.com"],
+  "specs": {
+    "driver_size": "30mm",
+    "frequency_response": "4Hz-40kHz",
+    "battery_life": "30 hours",
+    "weight": "250g"
+  },
+  "pricing": [
+    {"vendor": "Amazon", "price": 349.99, "currency": "USD", "url": "...", "checked": "2025-01-13"},
+    {"vendor": "B&H", "price": 329.99, "currency": "USD", "url": "...", "checked": "2025-01-13"}
+  ],
+  "reviews": {
+    "rtings": 8.4,
+    "soundguys": 8.5,
+    "amazon_rating": 4.6,
+    "amazon_count": 12453
+  }
+}
+```
+
+### Cache Behavior
+
+1. **Before fetching**: Check if `data/products/[brand]-[model].json` exists
+2. **If recent** (< 7 days): Use cached data
+3. **If stale or missing**: Fetch fresh data and update cache
+4. **Always update pricing**: Prices change frequently; refresh even if specs are cached
+
+This prevents redundant lookups when evaluating the same products across multiple purchase decisions.
+
 ## Slash Commands
 
 | Command | Purpose |
 |---------|---------|
-| `/interview` | Onboard user and capture preferences |
+| `/onboard` | **Start here** - Intelligent entry point that skips unnecessary steps |
+| `/interview` | Full questionnaire for comprehensive profile setup |
 | `/extract` | Extract products from screenshots/catalogs to CSV |
 | `/research` | Evaluate all candidate products |
-| `/recommend` | Generate final recommendation |
+| `/recommend` | Generate final PDF recommendation report |
 | `/compare` | Side-by-side comparison |
 
 ## Sub-Agent Architecture
@@ -251,9 +413,12 @@ When spawning sub-agents, always pass:
 
 A recommendation succeeds when:
 
-1. Single best option is clearly identified
-2. Reasoning traces back to user's stated preferences
-3. Value-for-money is optimized for user's market
-4. Requirements are met
-5. User has confidence to purchase without additional research
-6. Foundational rules have been applied (no disqualified products recommended)
+1. **Single PDF deliverable** - User receives one professional report they can act on
+2. **Decisive recommendations** - Top 3 ranked choices with clear #1 pick
+3. **Minimal interaction** - User provides context once; assistant does the rest
+4. **Reasoning traces to preferences** - Recommendations align with buyer profile
+5. **Value-for-money optimized** - Best options for user's market and budget
+6. **Requirements clearly mapped** - Spec adherence matrix shows what matches
+7. **Foundational rules applied** - No disqualified products recommended
+8. **Data cached for reuse** - Product specs saved for future sessions
+9. **Report delivered** - PDF emailed if Resend MCP is configured
