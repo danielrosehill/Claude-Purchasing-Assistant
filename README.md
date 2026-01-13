@@ -1,3 +1,5 @@
+[![Claude Code Repos Index](https://img.shields.io/badge/Claude%20Code%20Repos-Index-blue?style=flat-square&logo=github)](https://github.com/danielrosehill/Claude-Code-Repos-Index)
+
 # Claude Purchasing Assistant
 
 ![Claude Space](https://img.shields.io/badge/Claude-Space-purple?style=flat-square)
@@ -163,3 +165,7 @@ The buyer profile supports any purchasing philosophy:
 5. /recommend
    → "My recommendation is the Bosch GSR 18V-60..."
 ```
+
+---
+
+For more Claude Code projects, visit my [Claude Code Repos Index](https://github.com/danielrosehill/Claude-Code-Repos-Index).

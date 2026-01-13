@@ -11,6 +11,10 @@ This Claude Space provides structured assistance for making purchasing decisions
 ├── buyer-profile.md               # User preferences (populated via /interview)
 ├── context/
 │   └── interview-questions.md     # Question bank for onboarding
+├── data/
+│   └── extracted/                 # DATA: Structured CSV extractions
+│       └── [purchase-name]/
+│           └── products.csv       # Extracted product data
 ├── for-ai/                        # INPUT: User provides files here
 │   └── [purchase-name]/           # Screenshots, PDFs, links
 ├── from-ai/                       # OUTPUT: Agent places results here
@@ -39,6 +43,19 @@ User provides product options in `for-ai/`:
 - Screenshots of products from websites
 - PDFs with specifications
 - Links or notes in text files
+
+### Phase 2b: Data Extraction (`/extract`)
+
+When working with screenshots or catalog images:
+1. Run `/extract` to process images in `for-ai/[purchase]/`
+2. Sub-agent reads each image/PDF and extracts visible products
+3. Outputs structured CSV to `data/extracted/[purchase]/products.csv`
+4. CSV includes: product_name, brand, price, price_numeric, currency, sku, source, page, notes
+
+This step is optional but recommended for:
+- Catalog pages with many products
+- Price comparison across multiple vendors
+- When you need sortable/filterable product data
 
 ### Phase 3: Research (`/research`)
 
@@ -181,6 +198,7 @@ Reference `context/interview-questions.md` for the full question bank. Key clari
 | Command | Purpose |
 |---------|---------|
 | `/interview` | Onboard user and capture preferences |
+| `/extract` | Extract products from screenshots/catalogs to CSV |
 | `/research` | Evaluate all candidate products |
 | `/recommend` | Generate final recommendation |
 | `/compare` | Side-by-side comparison |
